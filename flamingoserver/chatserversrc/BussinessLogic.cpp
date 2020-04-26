@@ -12,7 +12,7 @@
 #include "ChatServer.h"
 #include "UserManager.h"
 
-void BussinessLogic::RegisterUser(const std::string& data, const std::shared_ptr<TcpConnection>& conn, bool keepalive, std::string& retData)
+void BussinessLogic::registerUser(const std::string& data, const std::shared_ptr<TcpConnection>& conn, bool keepalive, std::string& retData)
 {
     //{ "user": "13917043329", "nickname" : "balloon", "password" : "123" }
 
@@ -23,7 +23,7 @@ void BussinessLogic::RegisterUser(const std::string& data, const std::shared_ptr
     bool ok = reader->parse(data.c_str(), data.c_str() + data.length(), &jsonRoot, &errs);
     if (!ok || errs.size() != 0)
     {
-        LOGW("invalid json: %s, , client: %s", data.c_str(), conn->peerAddress().toIpPort().c_str());
+        LOGW("invalid json: %s, client: %s", data.c_str(), conn->peerAddress().toIpPort().c_str());
         delete reader;
         return;
     }
@@ -31,7 +31,7 @@ void BussinessLogic::RegisterUser(const std::string& data, const std::shared_ptr
 
     if (!jsonRoot["username"].isString() || !jsonRoot["nickname"].isString() || !jsonRoot["password"].isString())
     {
-        LOGW("invalid json: %s, , client: %s", data.c_str(), conn->peerAddress().toIpPort().c_str());        
+        LOGW("invalid json: %s, client: %s", data.c_str(), conn->peerAddress().toIpPort().c_str());        
         return;
     }
 
@@ -43,12 +43,12 @@ void BussinessLogic::RegisterUser(const std::string& data, const std::shared_ptr
     //std::string retData;
     User cachedUser;
     cachedUser.userid = 0;
-    Singleton<UserManager>::Instance().GetUserInfoByUsername(u.username, cachedUser);
+    Singleton<UserManager>::Instance().getUserInfoByUsername(u.username, cachedUser);
     if (cachedUser.userid != 0)
         retData = "{\"code\": 101, \"msg\": \"registered already\"}";
     else
     {
-        if (!Singleton<UserManager>::Instance().AddUser(u))
+        if (!Singleton<UserManager>::Instance().addUser(u))
             retData = "{\"code\": 100, \"msg\": \"register failed\"}";
         else
         {

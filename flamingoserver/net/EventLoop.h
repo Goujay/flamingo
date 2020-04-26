@@ -22,8 +22,6 @@ namespace net
     //class TimerQueue;
     class CTimerHeap;
 
-    EventLoop* getEventLoopOfCurrentThread();
-
 	///
 	/// Reactor, at most one per thread.
 	///
@@ -66,7 +64,7 @@ namespace net
 		/// Safe to call from other threads.
 		void queueInLoop(const Functor& cb);
 
-        // timers，时间单位均是秒
+        // timers，时间单位均是微秒
         ///
         /// Runs callback at 'time'.
         /// Safe to call from other threads.
@@ -114,8 +112,6 @@ namespace net
 		// bool callingPendingFunctors() const { return callingPendingFunctors_; }
 		bool eventHandling() const { return eventHandling_; }
 
-		static EventLoop* getEventLoopOfCurrentThread();
-
 		const std::thread::id getThreadID() const
 		{
 			return threadId_;
@@ -139,8 +135,8 @@ namespace net
 		bool                                callingPendingFunctors_; /* atomic */
 		const std::thread::id               threadId_;
 		Timestamp                           pollReturnTime_;
-		std::shared_ptr<Poller>             poller_;
-        std::shared_ptr<TimerQueue>         timerQueue_;
+		std::unique_ptr<Poller>             poller_;
+        std::unique_ptr<TimerQueue>         timerQueue_;
         int64_t                             iteration_;
 #ifdef WIN32
         SOCKET                              wakeupFdSend_;
@@ -153,7 +149,7 @@ namespace net
 #endif
 		// unlike in TimerQueue, which is an internal class,
 		// we don't expose Channel to client.
-		std::shared_ptr<Channel>            wakeupChannel_;
+		std::unique_ptr<Channel>            wakeupChannel_;
 	
 		// scratch variables
 		ChannelList                         activeChannels_;
